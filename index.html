@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Helping Hand</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="container">
+    <h1>Helping Hand</h1>
+
+    <!-- Registration/Login Form -->
+    <div id="auth-form" class="tab-content active">
+      <h2>User Registration / Login</h2>
+      
+      <label for="name">Full Name</label>
+      <input type="text" id="name" placeholder="Enter your full name" />
+
+      <label for="email">Email</label>
+      <input type="email" id="email" placeholder="Enter your email" />
+
+      <label for="phone">Phone</label>
+      <div class="phone-container">
+        <select id="country-code">
+          <option value="+91" selected>+91 (India)</option>
+        </select>
+        <input type="tel" id="phone" maxlength="10" placeholder="Enter your phone number" />
+      </div>
+
+      <label for="aadhar">Aadhar</label>
+      <input type="text" id="aadhar" maxlength="12" placeholder="Enter your 12-digit Aadhar number" />
+
+      <p id="error" class="error"></p>
+      <button type="button" id="register-btn">Register & Verify</button>
+    </div>
+
+    <!-- OTP verification -->
+    <div id="otp-form" class="tab-content">
+      <h2>OTP Verification</h2>
+      <input type="text" id="otp-input" placeholder="Enter OTP" />
+      <button type="button" id="verify-otp-btn">Verify OTP</button>
+      <p id="otp-error" class="error"></p>
+      <p id="otp-timer"></p>
+    </div>
+
+    <!-- Task Options -->
+    <div id="task-options" class="tab-content">
+      <h2>Welcome, <span id="user-name"></span>!</h2>
+      <button type="button" id="profile-btn" class="option-btn">Profile</button>
+      <button type="button" id="post-task-option" class="option-btn">Post Task</button>
+      <button type="button" id="take-task-option" class="option-btn">Take Task</button>
+      <button type="button" id="logout-btn" class="option-btn">Logout</button>
+    </div>
+
+    <!-- Profile Page -->
+    <div id="profile-page" class="tab-content">
+      <h3>User Profile</h3>
+      <p><strong>Name:</strong> <span id="profile-name"></span></p>
+      <p><strong>Email:</strong> <span id="profile-email"></span></p>
+      <p><strong>Phone:</strong> <span id="profile-phone"></span></p>
+      <p><strong>Aadhar:</strong> <span id="profile-aadhar"></span></p>
+      <button type="button" id="back-to-tasks-btn">Back</button>
+    </div>
+
+    <!-- Post Task Form -->
+    <div id="task-post-form" class="tab-content">
+      <h3>Post a Task</h3>
+      <label for="task-category">Category</label>
+      <select id="task-category">
+        <option value="Cleaning">Cleaning</option>
+        <option value="Delivery">Delivery</option>
+        <option value="Tutoring">Tutoring</option>
+        <option value="Other">Other</option>
+      </select>
+
+      <label for="task-title">Title</label>
+      <input type="text" id="task-title" placeholder="Task title" />
+
+      <label for="task-desc">Description</label>
+      <textarea id="task-desc" placeholder="Task description"></textarea>
+
+      <label for="task-time">Time Slot</label>
+      <input type="text" id="task-time" placeholder="e.g., 2 PM - 4 PM" />
+
+      <label for="task-reward">Reward ₹</label>
+      <input type="number" id="task-reward" placeholder="Task reward" />
+
+      <button type="button" id="post-task-btn">Post Task</button>
+    </div>
+
+    <!-- Task List Section -->
+    <div id="task-list-section" class="tab-content">
+      <h3>Available Tasks</h3>
+
+      <label for="filter-category">Filter by Category</label>
+      <select id="filter-category">
+        <option value="All">All</option>
+        <option value="Cleaning">Cleaning</option>
+        <option value="Delivery">Delivery</option>
+        <option value="Tutoring">Tutoring</option>
+        <option value="Other">Other</option>
+      </select>
+
+      <input type="text" id="search-task" placeholder="Search tasks..." />
+
+      <ul id="task-list"></ul>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
