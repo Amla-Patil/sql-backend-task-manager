@@ -3,6 +3,10 @@ let currentUser = null;
 let generatedOTP = null;
 let otpTimeout = null;
 
+// --- In-memory storage ---
+let tasks = [];
+let reports = [];
+
 // --- Elements ---
 const nameEl = document.getElementById("name");
 const emailEl = document.getElementById("email");
@@ -57,6 +61,7 @@ const reportReasonEl = document.getElementById("report-reason");
 const paymentAmountEl = document.getElementById("payment-amount");
 const payBtn = document.getElementById("pay-btn");
 const closePaymentBtn = document.getElementById("close-payment-btn");
+let currentPaymentTaskId = null;
 
 // --- Register Button ---
 document.getElementById("register-btn").addEventListener("click", () => {
@@ -91,7 +96,7 @@ document.getElementById("register-btn").addEventListener("click", () => {
 document.getElementById("verify-otp-btn").addEventListener("click", () => {
   if (otpInput.value === String(generatedOTP)) {
     currentUser = {
-      id: Math.floor(Math.random()*1000), // fake ID
+      id: Math.floor(Math.random()*1000),
       name: nameEl.value,
       email: emailEl.value,
       phone: countryCodeEl.value + phoneEl.value,
@@ -112,6 +117,7 @@ function afterLogin() {
   otpForm.classList.remove("active");
   taskOptions.classList.add("active");
   nameEl.value = emailEl.value = phoneEl.value = aadharEl.value = "";
+  renderTasks();
 }
 
 // --- Logout ---
@@ -166,10 +172,22 @@ postTaskBtn.addEventListener("click", () => {
     alert("All task fields are required!");
     return;
   }
-  alert("Task posted successfully! (Fake)"); // Fake post
+  const newTask = {
+    id: tasks.length + 1,
+    category: taskCategoryEl.value,
+    title: taskTitleEl.value,
+    description: taskDescEl.value,
+    time_slot: taskTimeEl.value,
+    reward: Number(taskRewardEl.value),
+    posted_by: currentUser.name,
+    status: "Available"
+  };
+  tasks.push(newTask);
+  alert("Task posted successfully!");
   taskPostForm.classList.remove("active");
   taskListSection.classList.add("active");
   clearTaskForm();
+  renderTasks();
 });
 
 function clearTaskForm() {
@@ -179,30 +197,82 @@ function clearTaskForm() {
   taskRewardEl.value = '';
 }
 
+// --- Render Tasks ---
+function renderTasks() {
+  taskListEl.innerHTML = "";
+  const filter = filterCategoryEl.value;
+  const search = searchTaskEl.value.toLowerCase();
+
+  tasks
+    .filter(t => filter === "All" ? true : t.category === filter)
+    .filter(t => t.title.toLowerCase().includes(search) || t.description.toLowerCase().includes(search))
+    .forEach(task => {
+      const li = document.createElement("li");
+      li.innerHTML = `
+        <strong>${task.title}</strong><br/>
+        Category: ${task.category}<br/>
+        Description: ${task.description}<br/>
+        Time Slot: ${task.time_slot}<br/>
+        Reward: ₹${task.reward}<br/>
+        Posted by: ${task.posted_by}<br/>
+        Status: <span style="color:${task.status==="Available"?"green":"gray"}">${task.status}</span><br/>
+        <button onclick="acceptTask(${task.id})" ${task.status!=="Available"?"disabled":""}>Accept Task</button>
+        <button onclick="openPaymentModal(${task.id})" ${task.status!=="Accepted"?"disabled":""}>Pay ₹${task.reward}</button>
+      `;
+      taskListEl.appendChild(li);
+    });
+}
+
+// --- Accept Task ---
+function acceptTask(taskId){
+  const task = tasks.find(t => t.id===taskId);
+  if(task && task.status==="Available"){
+    task.status = "Accepted";
+    renderTasks();
+  }
+}
+
 // --- Report Task ---
 submitReportBtn.addEventListener("click", () => {
-  if(!reportTaskIdEl.value || !reportReasonEl.value.trim()){
-    alert("Please enter Task ID and reason.");
+  const taskId = Number(reportTaskIdEl.value);
+  const reason = reportReasonEl.value.trim();
+  if(!taskId || !reason){
+    alert("Please enter valid Task ID and reason.");
     return;
   }
-  alert("Report submitted successfully! (Fake)");
+  const task = tasks.find(t => t.id===taskId);
+  if(!task){
+    alert("Task not found!");
+    return;
+  }
+  reports.push({
+    taskId: taskId,
+    reporter: currentUser.name,
+    reason
+  });
+  alert("Report submitted successfully!");
   reportTaskIdEl.value = reportReasonEl.value = '';
   reportTaskForm.classList.remove("active");
   taskOptions.classList.add("active");
 });
 
-// --- Fake Payment ---
-let currentPaymentAmount = 0;
-function openPayment(amount){
-  currentPaymentAmount = amount;
-  paymentAmountEl.innerText = amount;
+// --- Payment ---
+function openPaymentModal(taskId){
+  const task = tasks.find(t=>t.id===taskId);
+  if(!task || task.status!=="Accepted") return;
+  currentPaymentTaskId = taskId;
+  paymentAmountEl.innerText = task.reward;
   paymentModal.classList.add("active");
 }
-payBtn.addEventListener("click", () => {
-  alert("Payment successful! (Fake)");
+payBtn.addEventListener("click", ()=>{
+  alert(`Payment of ₹${tasks.find(t=>t.id===currentPaymentTaskId).reward} successful!`);
   paymentModal.classList.remove("active");
 });
-closePaymentBtn.addEventListener("click", () => paymentModal.classList.remove("active"));
+closePaymentBtn.addEventListener("click", ()=> paymentModal.classList.remove("active"));
+
+// --- Filters & Search ---
+filterCategoryEl.addEventListener("change", renderTasks);
+searchTaskEl.addEventListener("input", renderTasks);
 
 // --- Start App ---
 authForm.classList.add("active");
