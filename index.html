@@ -50,6 +50,7 @@
       <button type="button" id="profile-btn" class="option-btn">Profile</button>
       <button type="button" id="post-task-option" class="option-btn">Post Task</button>
       <button type="button" id="take-task-option" class="option-btn">Take Task</button>
+      <button type="button" id="report-task-option" class="option-btn">Report</button>
       <button type="button" id="logout-btn" class="option-btn">Logout</button>
     </div>
 
@@ -106,6 +107,27 @@
 
       <ul id="task-list"></ul>
     </div>
+
+    <!-- Report Form -->
+    <div id="report-task-form" class="tab-content">
+      <h3>Report a User / Task</h3>
+      <label for="report-task-id">Task ID</label>
+      <input type="number" id="report-task-id" placeholder="Enter Task ID" />
+
+      <label for="report-reason">Reason</label>
+      <textarea id="report-reason" placeholder="Enter reason for reporting"></textarea>
+
+      <button type="button" id="submit-report-btn">Submit Report</button>
+    </div>
+
+    <!-- Fake Payment Modal -->
+    <div id="payment-modal" class="tab-content">
+      <h3>Payment</h3>
+      <p>Pay ₹<span id="payment-amount">0</span> for this task</p>
+      <button type="button" id="pay-btn">Pay Now (Fake)</button>
+      <button type="button" id="close-payment-btn">Close</button>
+    </div>
+
   </div>
 
   <script src="script.js"></script>
