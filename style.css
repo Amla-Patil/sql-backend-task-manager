@@ -47,3 +47,36 @@ button:disabled { background-color: #aaa; cursor:not-allowed;}
   .option-btn{width:100%; margin-right:0;}
   .container{padding:15px;}
 }
+/* ---------- Payment page styles (append) ---------- */
+.payment-container {
+  max-width: 500px;
+  margin: 80px auto;
+  padding: 30px;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.15);
+  text-align: center;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+.payment-container h2 {
+  color: #4e73df;
+  margin-bottom: 10px;
+  font-size: 22px;
+}
+.payment-container p { color: #333; font-size: 16px; margin-bottom: 18px; }
+.payment-container .payment-methods { display:flex; justify-content:center; gap:12px; flex-wrap:wrap; }
+.payment-container button {
+  width: 160px;
+  padding: 12px 10px;
+  font-size: 15px;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  transition: transform .15s ease, box-shadow .15s ease;
+}
+.payment-container button:active { transform: translateY(1px); }
+.payment-success { background:#28a745; color:#fff; box-shadow:0 6px 14px rgba(40,167,69,0.15); }
+.payment-success:hover { box-shadow:0 10px 20px rgba(40,167,69,0.18); }
+.payment-fail { background:#e74a3b; color:#fff; box-shadow:0 6px 14px rgba(231,74,59,0.12); }
+.payment-fail:hover { box-shadow:0 10px 20px rgba(231,74,59,0.15); }
+
