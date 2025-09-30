@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Helping Hand - Fake Payment</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="payment-container">
+    <h2>Helping Hand — Fake Payment Gateway</h2>
+    <p id="amount-text">Pay ₹0</p>
+
+    <div class="payment-methods">
+      <p style="font-weight:600;">Choose payment method (simulation)</p>
+      <button class="payment-success" onclick="completePayment('success')">✅ Simulate Success</button>
+      <button class="payment-fail" onclick="completePayment('fail')">❌ Simulate Failure</button>
+    </div>
+
+    <p style="margin-top:18px; font-size:14px; color:#666;">
+      This is a fake payment page for demo only. You will be redirected back to the app after selection.
+    </p>
+  </div>
+
+  <script>
+    // read amount, taskId, and returnUrl from query params
+    const params = new URLSearchParams(window.location.search);
+    const amount = params.get("amount") || "0";
+    const taskId = params.get("taskId") || "";
+    const returnUrl = params.get("returnUrl") || "index.html";
+
+    document.getElementById("amount-text").innerText = `Pay ₹${amount}`;
+
+    function completePayment(status) {
+      // Redirect back to the app with payment result
+      // status = 'success' or 'fail'
+      // returnUrl will handle calling payment.php to record the payment
+      const url = new URL(returnUrl, window.location.origin);
+      url.searchParams.set("payment", status);
+      url.searchParams.set("amount", amount);
+      if (taskId) url.searchParams.set("taskId", taskId);
+      // go back to main app
+      window.location.href = url.toString();
+    }
+  </script>
+</body>
+</html>
