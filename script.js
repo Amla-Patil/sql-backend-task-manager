@@ -21,9 +21,12 @@ const taskOptions = document.getElementById("task-options");
 const taskPostForm = document.getElementById("task-post-form");
 const taskListSection = document.getElementById("task-list-section");
 const profilePage = document.getElementById("profile-page");
+const reportTaskForm = document.getElementById("report-task-form");
+const paymentModal = document.getElementById("payment-modal");
 
 const postTaskOption = document.getElementById("post-task-option");
 const takeTaskOption = document.getElementById("take-task-option");
+const reportTaskOption = document.getElementById("report-task-option");
 const logoutBtn = document.getElementById("logout-btn");
 const profileBtn = document.getElementById("profile-btn");
 const backToTasksBtn = document.getElementById("back-to-tasks-btn");
@@ -44,6 +47,16 @@ const postTaskBtn = document.getElementById("post-task-btn");
 const taskListEl = document.getElementById("task-list");
 const filterCategoryEl = document.getElementById("filter-category");
 const searchTaskEl = document.getElementById("search-task");
+
+// --- Report Elements ---
+const submitReportBtn = document.getElementById("submit-report-btn");
+const reportTaskIdEl = document.getElementById("report-task-id");
+const reportReasonEl = document.getElementById("report-reason");
+
+// --- Payment Elements ---
+const paymentAmountEl = document.getElementById("payment-amount");
+const payBtn = document.getElementById("pay-btn");
+const closePaymentBtn = document.getElementById("close-payment-btn");
 
 // --- Register Button ---
 document.getElementById("register-btn").addEventListener("click", () => {
@@ -77,40 +90,14 @@ document.getElementById("register-btn").addEventListener("click", () => {
 // --- OTP Verification ---
 document.getElementById("verify-otp-btn").addEventListener("click", () => {
   if (otpInput.value === String(generatedOTP)) {
-    const userData = {
+    currentUser = {
+      id: Math.floor(Math.random()*1000), // fake ID
       name: nameEl.value,
       email: emailEl.value,
       phone: countryCodeEl.value + phoneEl.value,
-      aadhar: aadharEl.value,
+      aadhar: aadharEl.value
     };
-
-    fetch('register.php', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(userData),
-    })
-      .then(res => res.json())
-      .then(data => {
-        if (data.status === 'exists') {
-          alert('User already exists. Logging in...');
-          currentUser = userData;
-          afterLogin();
-        } else if (data.status === 'success') {
-          alert('Registration successful!');
-          currentUser = userData;
-          afterLogin();
-        } else {
-          alert('Registration failed. Please try again.');
-          otpForm.classList.remove("active");
-          authForm.classList.add("active");
-        }
-      })
-      .catch(() => {
-        alert('Server error during registration.');
-        otpForm.classList.remove("active");
-        authForm.classList.add("active");
-      });
-
+    afterLogin();
     otpInput.value = "";
     otpErrorEl.innerText = "";
     clearInterval(otpTimeout);
@@ -125,7 +112,6 @@ function afterLogin() {
   otpForm.classList.remove("active");
   taskOptions.classList.add("active");
   nameEl.value = emailEl.value = phoneEl.value = aadharEl.value = "";
-  fetchTasks();
 }
 
 // --- Logout ---
@@ -135,6 +121,7 @@ logoutBtn.addEventListener("click", () => {
   taskOptions.classList.remove("active");
   taskPostForm.classList.remove("active");
   taskListSection.classList.remove("active");
+  reportTaskForm.classList.remove("active");
   profilePage.classList.remove("active");
 });
 
@@ -158,12 +145,19 @@ backToTasksBtn.addEventListener("click", () => {
 postTaskOption.addEventListener("click", () => {
   taskPostForm.classList.add("active");
   taskListSection.classList.remove("active");
+  reportTaskForm.classList.remove("active");
 });
 
 takeTaskOption.addEventListener("click", () => {
   taskPostForm.classList.remove("active");
   taskListSection.classList.add("active");
-  fetchTasks();
+  reportTaskForm.classList.remove("active");
+});
+
+reportTaskOption.addEventListener("click", () => {
+  reportTaskForm.classList.add("active");
+  taskPostForm.classList.remove("active");
+  taskListSection.classList.remove("active");
 });
 
 // --- Post Task ---
@@ -172,34 +166,10 @@ postTaskBtn.addEventListener("click", () => {
     alert("All task fields are required!");
     return;
   }
-
-  const taskData = {
-    category: taskCategoryEl.value,
-    title: taskTitleEl.value,
-    description: taskDescEl.value,
-    timeSlot: taskTimeEl.value,
-    reward: Number(taskRewardEl.value),
-    postedBy: currentUser.email,
-  };
-
-  fetch('post_task.php', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(taskData),
-  })
-    .then(res => res.json())
-    .then(data => {
-      if (data.status === 'success') {
-        alert('Task posted successfully!');
-        taskPostForm.classList.remove("active");
-        taskListSection.classList.add("active");
-        clearTaskForm();
-        fetchTasks();
-      } else {
-        alert('Failed to post task.');
-      }
-    })
-    .catch(() => alert('Server error posting task.'));
+  alert("Task posted successfully! (Fake)"); // Fake post
+  taskPostForm.classList.remove("active");
+  taskListSection.classList.add("active");
+  clearTaskForm();
 });
 
 function clearTaskForm() {
@@ -209,229 +179,30 @@ function clearTaskForm() {
   taskRewardEl.value = '';
 }
 
-// --- Fetch Tasks ---
-function fetchTasks() {
-  fetch('get_task.php') // ✅ Corrected filename
-    .then(res => res.json())
-    .then(tasks => {
-      window.tasks = tasks;
-      renderTasks();
-    })
-    .catch(() => {
-      alert('Failed to load tasks.');
-      taskListEl.innerHTML = '<li>Failed to load tasks.</li>';
-    });
-}
-
-// --- Render Tasks ---
-function renderTasks() {
-  taskListEl.innerHTML = "";
-  if (!window.tasks) return;
-
-  const filter = filterCategoryEl.value;
-  const search = searchTaskEl.value.toLowerCase();
-
-  window.tasks
-    .filter(task => (filter === "All" ? true : task.category === filter))
-    .filter(task => task.title.toLowerCase().includes(search) || task.description.toLowerCase().includes(search))
-    .forEach(task => {
-      const li = document.createElement("li");
-      li.innerHTML = `
-        <strong>${task.title}</strong><br/>
-        Category: ${task.category}<br/>
-        Description: ${task.description}<br/>
-        Time Slot: ${task.time_slot}<br/>
-        Reward: ₹${task.reward}<br/>
-        Posted by: ${task.poster || task.posted_by}<br/>
-        Status: <span style="color:${task.status === 'Available' ? 'green' : 'gray'}">${task.status}</span><br/>
-        <button onclick="acceptTask(${task.id})" ${task.status !== 'Available' ? 'disabled' : ''}>Accept Task</button>
-      `;
-      taskListEl.appendChild(li);
-    });
-}
-
-// --- Accept Task ---
-function acceptTask(taskId) {
-  if (!currentUser) {
-    alert('Please login first.');
+// --- Report Task ---
+submitReportBtn.addEventListener("click", () => {
+  if(!reportTaskIdEl.value || !reportReasonEl.value.trim()){
+    alert("Please enter Task ID and reason.");
     return;
   }
+  alert("Report submitted successfully! (Fake)");
+  reportTaskIdEl.value = reportReasonEl.value = '';
+  reportTaskForm.classList.remove("active");
+  taskOptions.classList.add("active");
+});
 
-  fetch('accept_task.php', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ task_id: taskId })
-  })
-    .then(res => res.json())
-    .then(data => {
-      if (data.status === 'success') {
-        alert("Task accepted!");
-        fetchTasks();
-      } else {
-        alert("Could not accept task. It may already be taken.");
-      }
-    })
-    .catch(err => {
-      console.error("Error accepting task:", err);
-      alert("Server error while accepting task.");
-    });
+// --- Fake Payment ---
+let currentPaymentAmount = 0;
+function openPayment(amount){
+  currentPaymentAmount = amount;
+  paymentAmountEl.innerText = amount;
+  paymentModal.classList.add("active");
 }
-
-// --- Filters ---
-filterCategoryEl.addEventListener("change", renderTasks);
-searchTaskEl.addEventListener("input", renderTasks);
+payBtn.addEventListener("click", () => {
+  alert("Payment successful! (Fake)");
+  paymentModal.classList.remove("active");
+});
+closePaymentBtn.addEventListener("click", () => paymentModal.classList.remove("active"));
 
 // --- Start App ---
 authForm.classList.add("active");
-/* ---------- Fake payment integration (append to script.js) ---------- */
-
-(function() {
-  // helper: read query params on return from payment.html
-  function readPaymentResultFromURL() {
-    const params = new URLSearchParams(window.location.search);
-    const payment = params.get('payment'); // success / fail
-    const amount = params.get('amount');
-    const taskId = params.get('taskId');
-    return { payment, amount, taskId };
-  }
-
-  // If user returned from payment.html, and payment param exists, we call payment.php
-  window.addEventListener('load', () => {
-    const res = readPaymentResultFromURL();
-    if (res.payment) {
-      // Only proceed if there is a pending payment and currentUser exists
-      // If currentUser not set (e.g., user not logged in), we'll just show an alert
-      if (!res.taskId) {
-        // maybe payment initiated from posting a task; older flow uses localStorage.pendingTask
-        handleReturnFromPaymentLegacy(res);
-      } else {
-        // Normal case: accept task flow
-        if (!currentUser) {
-          alert('Payment result received but you are not logged in. Please login again.');
-          // Clean URL to avoid repeated actions
-          window.history.replaceState({}, '', window.location.pathname);
-          return;
-        }
-        // send to server to record fake payment and accept the task (only on success)
-        if (res.payment === 'success') {
-          // call payment.php to record
-          fetch('payment.php', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              task_id: Number(res.taskId),
-              user_email: currentUser.email,
-              amount: Number(res.amount || 0),
-              status: 'Success'
-            })
-          })
-          .then(r => r.json())
-          .then(data => {
-            if (data.status === 'success') {
-              alert('Payment successful and task accepted!');
-              fetchTasks();
-            } else {
-              alert('Payment recorded but server returned an error.');
-              fetchTasks();
-            }
-          })
-          .catch(err => {
-            console.error('Error calling payment.php', err);
-            alert('Server error while recording payment.');
-          });
-        } else {
-          alert('Payment simulation failed. Task not accepted.');
-        }
-        // Clean URL params after handling (prevent re-run)
-        window.history.replaceState({}, '', window.location.pathname);
-      }
-    }
-  });
-
-  // Legacy: handle case where posting a task stored pendingTask in localStorage and payment returned
-  function handleReturnFromPaymentLegacy(res) {
-    // if posting-task flow (we saved pendingTask earlier), handle success -> add to DB / UI
-    const pending = localStorage.getItem('pendingTask');
-    if (!pending) {
-      // nothing to do
-      window.history.replaceState({}, '', window.location.pathname);
-      return;
-    }
-    const task = JSON.parse(pending);
-    if (res.payment === 'success') {
-      // POST to post_task.php (same as your existing post flow)
-      fetch('post_task.php', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(task)
-      })
-      .then(r => r.json())
-      .then(data => {
-        if (data.status === 'success') {
-          alert('Task posted successfully after payment!');
-          localStorage.removeItem('pendingTask');
-          fetchTasks();
-        } else {
-          alert('Server failed to post task after payment.');
-        }
-      })
-      .catch(() => alert('Server error posting task after payment.'));
-    } else {
-      alert('Payment failed. Task was not posted.');
-      localStorage.removeItem('pendingTask');
-    }
-    // clean URL
-    window.history.replaceState({}, '', window.location.pathname);
-  }
-
-  // Show fake payment page for accepting a task:
-  // This function will redirect the user to payment.html with the taskId and amount
-  function showFakePaymentForTask(taskId, reward) {
-    // use a return URL that points back to index.html so the appended code can pick up params
-    const returnUrl = `${window.location.pathname}`; // index.html or current path
-    const url = `payment.html?taskId=${encodeURIComponent(taskId)}&amount=${encodeURIComponent(reward)}&returnUrl=${encodeURIComponent(returnUrl)}`;
-    window.location.href = url;
-  }
-
-  // If you use the "post task -> pay -> post" flow (we suggested storing pendingTask in localStorage),
-  // keep that behavior: when posting a task, redirect to payment.html with amount & returnUrl.
-  // The code below overrides acceptTask at runtime (so you don't need to edit original file).
-  // It first finds the task reward from window.tasks and then calls the fake payment page.
-
-  const originalAcceptTask = window.acceptTask; // keep a reference (if exists)
-
-  // Override acceptTask so it first triggers fake payment
-  window.acceptTask = function(taskId) {
-    // If original function exists and you want to still call it after payment success,
-    // we will call payment.php to do what originalAcceptTask did (server side) so we don't need to call originalAcceptTask.
-    if (!currentUser) {
-      alert('Please login first.');
-      return;
-    }
-    if (!window.tasks) {
-      alert('Tasks not loaded yet. Please try again.');
-      return;
-    }
-    const t = window.tasks.find(tt => Number(tt.id) === Number(taskId));
-    const reward = t ? t.reward : 0;
-
-    const proceed = confirm(`You will pay ₹${reward} to accept this task.\n\nPress OK to go to the fake payment page (simulation).`);
-    if (proceed) {
-      showFakePaymentForTask(taskId, reward);
-    } else {
-      // if user cancelled, do nothing
-    }
-  };
-
-  // Export helper for posting-task flow: this function will be useful if you want "post -> pay -> post" flow
-  window.startPostTaskAndPay = function(taskObject) {
-    // Save pending task and redirect to payment page
-    localStorage.setItem('pendingTask', JSON.stringify(taskObject));
-    window.location.href = `payment.html?amount=${encodeURIComponent(taskObject.reward)}&returnUrl=${encodeURIComponent(window.location.pathname)}`;
-  };
-
-  // If you prefer the "post task" button to automatically go to payment (instead of direct post),
-  // you can replace the postTaskBtn click handler or call startPostTaskAndPay from your existing code.
-  // (No modifications made to your original post handler; this helper exists if you want to use it.)
-})();
-
